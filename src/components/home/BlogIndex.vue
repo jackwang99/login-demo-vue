@@ -17,21 +17,17 @@
 
 
     <el-table :data="userInfoList" style="width: 100%">
-      <el-table-column prop="cId" label="id" width="180">
-      </el-table-column>
-      <el-table-column prop="cUsername" label="名字" width="180">
-      </el-table-column>
-      <el-table-column prop="cPwd" label="密码" width="180">
-      </el-table-column>
+      <el-table-column prop="username" label="姓名" width="180"></el-table-column>
+      <el-table-column prop="sex" label="性别" width="180"></el-table-column>
+      <el-table-column prop="age" label="年龄" width="180"></el-table-column>
+      <el-table-column prop="address" label="地址" width="180"></el-table-column>
+      <el-table-column prop="email" label="邮件" width="180"></el-table-column>
+
       <!--第二步  开始进行修改和查询操作-->
       <el-table-column label="操作" align="center" min-width="100">
-
         <template slot-scope="scope">
-
           <el-button type="text" @click="checkDetail(scope.row)">查看详情</el-button>
-
           <el-button type="info" @click="modifyUser(scope.row)">修改</el-button>
-
           <el-button type="info" @click="deleteUser(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -39,22 +35,33 @@
     </el-table>
 
     <!--新增界面-->
-    <el-dialog title="记录" :visible.sync="dialogVisible" width="50%" :close-on-click-modal="false">
-      <el-form :model="addFormData" :rules="rules2" ref="addFormData" label-width="0px" class="demo-ruleForm login-container">
-        <el-form-item prop="cUsername">
-          <el-input type="text" v-model="addFormData.cUsername" auto-complete="off" placeholder="账号"></el-input>
+    <el-dialog title="记录" :visible.sync="dialogVisible" width="40%" :close-on-click-modal="false">
+      <el-form :model="addFormData" :rules="rules2" ref="addFormData" label-width="80px" class="demo-ruleForm login-container">
+        <el-form-item label="姓名" prop="username">
+          <el-input type="text" v-model="addFormData.username"></el-input>
         </el-form-item>
-        <el-form-item prop="cPwd">
-          <el-input type="password" v-model="addFormData.cPwd" auto-complete="off" placeholder="密码"></el-input>
+        <el-form-item label="性别">
+          <el-radio-group v-model="addFormData.sex">
+            <el-radio :label="0">男</el-radio>
+            <el-radio :label="1">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="年龄" prop="age">
+          <el-input type="text" v-model="addFormData.age"></el-input>
+        </el-form-item>
+        <el-form-item label="地址" prop="address">
+          <el-input type="text" v-model="addFormData.address"></el-input>
+        </el-form-item>
+        <el-form-item label="邮件" prop="email">
+          <el-input type="text" v-model="addFormData.email"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-                <el-button @click.native="dialogVisible = false,addFormData={cId:'',cUsername:'',cPwd:''}">取 消</el-button>
+                <el-button @click.native="dialogVisible = false,addFormData={username:'',sex:0,age:'',address:'',email:''}">取 消</el-button>
                 <el-button v-if="isView" type="primary" @click.native="addSubmit">确 定</el-button>
             </span>
     </el-dialog>
   </div>
-
 </template>
 
 <script>
@@ -67,19 +74,31 @@
         dialogVisible: false,
         isView: true,
         addFormData: {
-          cId: '',
-          cUsername: '',
-          cPwd: ''
+          username: '',
+          sex: 0,
+          age:'',
+          address:'',
+          email:''
         },
         rules2: {
-          cUsername: [{
+          username: [{
             required: true,
             message: '用户名不能为空',
             trigger: 'blur'
           }],
-          cPwd: [{
+          age: [{
             required: true,
-            message: '密码不能为空',
+            message: '年龄不能为空',
+            trigger: 'blur'
+          }],
+          address: [{
+            required: true,
+            message: '地址不能为空',
+            trigger: 'blur'
+          }],
+          email: [{
+            required: true,
+            message: '邮件不能为空',
             trigger: 'blur'
           }]
         },
@@ -91,7 +110,6 @@
     mounted: function () {
       this.loadData();
     },
-
     methods: {
       loadData() {
         let param = {filter:this.filters.name};
@@ -99,17 +117,17 @@
           var _data = result.data;
           this.userInfoList = _data;
         });
-
-
       },
       getUsers() {
         this.loadData();
       },
       addUser() {
         this.addFormData = {
-          cId: '',
-          cUsername: '',
-          cPwd: ''
+          username: '',
+          sex: 0,
+          age:'',
+          address:'',
+          email:''
         };
         this.isView = true;
         this.dialogVisible = true;
@@ -119,7 +137,6 @@
         this.addFormData = Object.assign({}, rowData);
         this.isView = false;
         this.dialogVisible = true;
-
         //    this.addFormReadOnly = true;
       },
       modifyUser(rowData) {
@@ -129,12 +146,11 @@
         //    this.addFormReadOnly = false;
       },
       deleteUser(rowData) {
-
         this.$alert('是否删除这条记录', '信息删除', {
           confirmButtonText: '确定',
           callback: action => {
             var params = {
-              userId: rowData.cId
+              userId: rowData.id
             };
             this.$axios.post("/user/delete", this.$qs.stringify(params)).then((result) => {
               console.info(result);
@@ -159,7 +175,6 @@
       },
       //增加一条记录
       addSubmit() {
-
         //先判断表单是否通过了判断
         this.$refs.addFormData.validate((valid) => {
           //代表通过验证 ,将参数传回后台
