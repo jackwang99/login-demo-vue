@@ -17,8 +17,12 @@
 
 
     <el-table :data="userInfoList" style="width: 100%">
-      <el-table-column prop="username" label="姓名" width="180"></el-table-column>
-      <el-table-column prop="sex" label="性别" width="180"></el-table-column>
+      <el-table-column prop="name" label="姓名" width="180"></el-table-column>
+      <el-table-column prop="sex" label="性别" width="180">
+        <template slot-scope="scope">
+          {{scope.row.sex == false ? '男' : '女'}}
+        </template>
+      </el-table-column>
       <el-table-column prop="age" label="年龄" width="180"></el-table-column>
       <el-table-column prop="address" label="地址" width="180"></el-table-column>
       <el-table-column prop="email" label="邮件" width="180"></el-table-column>
@@ -37,13 +41,13 @@
     <!--新增界面-->
     <el-dialog title="记录" :visible.sync="dialogVisible" width="40%" :close-on-click-modal="false">
       <el-form :model="addFormData" :rules="rules2" ref="addFormData" label-width="80px" class="demo-ruleForm login-container">
-        <el-form-item label="姓名" prop="username">
-          <el-input type="text" v-model="addFormData.username"></el-input>
+        <el-form-item label="姓名" prop="name">
+          <el-input type="text" v-model="addFormData.name"></el-input>
         </el-form-item>
         <el-form-item label="性别">
           <el-radio-group v-model="addFormData.sex">
-            <el-radio :label="0">男</el-radio>
-            <el-radio :label="1">女</el-radio>
+            <el-radio :label="false">男</el-radio>
+            <el-radio :label="true">女</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="年龄" prop="age">
@@ -57,7 +61,7 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-                <el-button @click.native="dialogVisible = false,addFormData={username:'',sex:0,age:'',address:'',email:''}">取 消</el-button>
+                <el-button @click.native="dialogVisible = false,addFormData={name:'',sex:0,age:'',address:'',email:''}">取 消</el-button>
                 <el-button v-if="isView" type="primary" @click.native="addSubmit">确 定</el-button>
             </span>
     </el-dialog>
@@ -74,14 +78,14 @@
         dialogVisible: false,
         isView: true,
         addFormData: {
-          username: '',
+          name: '',
           sex: 0,
           age:'',
           address:'',
           email:''
         },
         rules2: {
-          username: [{
+          name: [{
             required: true,
             message: '用户名不能为空',
             trigger: 'blur'
@@ -112,8 +116,8 @@
     },
     methods: {
       loadData() {
-        let param = {filter:this.filters.name};
-        this.$axios.post('/user/userlist',this.$qs.stringify(param)).then((result) => {
+        let param = {filter : this.filters.name};
+        this.$axios.get('/user/userlist',{params: param}).then((result) => {
           var _data = result.data;
           this.userInfoList = _data;
         });
@@ -123,7 +127,7 @@
       },
       addUser() {
         this.addFormData = {
-          username: '',
+          name: '',
           sex: 0,
           age:'',
           address:'',
@@ -149,10 +153,10 @@
         this.$alert('是否删除这条记录', '信息删除', {
           confirmButtonText: '确定',
           callback: action => {
-            var params = {
+            var param = {
               userId: rowData.id
             };
-            this.$axios.post("/user/delete", this.$qs.stringify(params)).then((result) => {
+            this.$axios.delete("/user/delete", {params: param}).then((result) => {
               console.info(result);
               if (result.data.success) {
                 this.$message({
@@ -180,11 +184,11 @@
           //代表通过验证 ,将参数传回后台
           if (valid) {
             let param = Object.assign({}, this.addFormData);
-            this.$axios.post("/user/submit", this.$qs.stringify(param)).then((result) => {
+            this.$axios.post("/user/submit", param).then((result) => {
               if (result.data.success) {
                 this.$message({
                   type: 'info',
-                  message: '添加成功',
+                  message: result.data.msg,
                 });
                 this.loadData();
               } else {
